@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sannu's Discipline Tracker</title>
+  <style>
+    :root {
+      --bg: #0f1226;
+      --card: rgba(255,255,255,0.06);
+      --card-border: rgba(255,255,255,0.12);
+      --fg: #e9ecff;
+      --muted: #b7bce7;
+      --accent: #6d8cff;
+      --accent-2: #00d4ff;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, sans-serif; color: var(--fg); background: var(--bg); overflow-x: hidden; }
+    .topbar { position: sticky; top: 0; z-index: 9; background: rgba(13,16,41,0.85); border-bottom: 1px solid var(--card-border); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn { border: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); color: var(--fg); padding: 10px 14px; border-radius: 12px; cursor: pointer; white-space: nowrap; }
+    .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; }
+    .sections { padding: 26px 20px 70px; max-width: 1100px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+    .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 18px; }
+    .month { position: relative; }
+    .month-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .progress { margin-top: 10px; height: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--card-border); border-radius: 999px; overflow: hidden; }
+    .progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(135deg, var(--good), var(--accent-2)); transition: width .3s ease; }
+    .stats { margin-top: 10px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 14px; }
+    .day { aspect-ratio: 1/1; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); display: grid; place-items: center; font-weight: 700; cursor: pointer; }
+    .day.done { background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(109,140,255,0.16)); border-color: rgba(34,197,94,0.45); }
+    .task-box { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); margin-top: 6px; }
+    .task-item { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+    .task-item input { accent-color: var(--accent-2); }
+    .task-item a { color: var(--accent-2); text-decoration: none; font-weight: 500; }
+    .task-item a:hover { text-decoration: underline; }
+    canvas { margin-top: 20px; background: rgba(255,255,255,0.04); border-radius: 12px; width: 100%; height: auto; }
+    .toast { position: fixed; bottom: 16px; right: 16px; background: #121635; border: 1px solid var(--card-border); color: var(--fg); padding: 14px 16px; border-radius: 12px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .25s ease; }
+    .toast.show { opacity: 1; pointer-events: auto; }
+    .start-learning { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+    .start-learning a { flex: 1 1 180px; text-align: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; padding: 12px 10px; border-radius: 12px; font-weight: 600; text-decoration: none; box-shadow: var(--shadow); transition: transform 0.2s; }
+    .start-learning a:hover { transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <h2>Discipline Tracker</h2>
+      <div style="flex:1"></div>
+      <button id="addMonthBtn" class="btn primary">+ Add Month</button>
+    </div>
+  </header>
+
+  <main class="sections">
+    <h2>Start Learning</h2>
+    <div class="start-learning">
+      <a href="https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2" target="_blank">DSA</a>
+      <a href="https://www.udemy.com/cart/success/2150182161/" target="_blank">Machine Learning</a>
+      <a href="https://www.freecodecamp.org/" target="_blank">Web Development</a>
+      <a href="https://www.youtube.com/feed/courses" target="_blank">GATE</a>
+      <a href="https://www.talkenglish.com/" target="_blank">English</a>
+    </div>
+
+    <h2 style="margin-top:32px;">Your Discipline Dashboard</h2>
+    <canvas id="progressChart" width="1000" height="300"></canvas>
+
+    <h2>Your Months</h2>
+    <div class="months" id="monthsGrid"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const STORAGE_KEY = 'discipline_tracker_v4';
+    const monthsNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const TASKS = {
+      "DSA":"https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet-2",
+      "Machine Learning":"https://www.udemy.com/cart/success/2150182161/",
+      "Web Development":"https://www.freecodecamp.org/",
+      "GATE Preparation":"https://www.youtube.com/feed/courses",
+      "English Speaking":"https://www.talkenglish.com/"
+    };
+
+    const $ = (s, r=document) => r.querySelector(s);
+
+    function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+
+    function load(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY))||{months:{}}; }catch(e){ return {months:{}}; } }
+    function save(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+    function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    function render(){
+      const st = load();
+      const grid = $('#monthsGrid');
+      grid.innerHTML='';
+      Object.values(st.months).forEach(m=>{
+        const card = document.createElement('div'); card.className='card month';
+        const h=document.createElement('div'); h.className='month-header';
+        h.innerHTML=`<strong>${monthsNames[m.month]} ${m.year}</strong>`;
+        card.appendChild(h);
+        const prog=document.createElement('div'); prog.className='progress'; const bar=document.createElement('i'); prog.appendChild(bar); card.appendChild(prog);
+        const stats=document.createElement('div'); stats.className='stats'; card.appendChild(stats);
+        const days=document.createElement('div'); days.className='days';
+        for(let d=1;d<=m.totalDays;d++){
+          const day=document.createElement('div'); day.className='day'; day.textContent=d;
+          day.addEventListener('click',()=>{ openTasksModal(m,d); });
+          days.appendChild(day);
+        }
+        card.appendChild(days);
+        grid.appendChild(card);
+        updateMonthProgress(m,bar,stats);
+      });
+      updateChart();
+    }
+
+    function openTasksModal(m,d){
+      const state=load();
+      const uid=`${m.year}-${m.month}`;
+      if(!state.months[uid].days) state.months[uid].days={};
+      if(!state.months[uid].days[d]) state.months[uid].days[d]={tasks:{}};
+      const dayData=state.months[uid].days[d];
+
+      const box=document.createElement('div');
+      box.className='card';
+      box.innerHTML=`<h3>${monthsNames[m.month]} ${d}, ${m.year}</h3>`;
+      const taskBox=document.createElement('div'); taskBox.className='task-box';
+      Object.entries(TASKS).forEach(([t,link])=>{
+        const item=document.createElement('div'); item.className='task-item';
+        const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=!!dayData.tasks[t];
+        inp.addEventListener('change',()=>{
+          dayData.tasks[t]=inp.checked;
+          save(state);
+          render();
+        });
+        const lbl=document.createElement('a'); lbl.textContent=t; lbl.href=link; lbl.target='_blank';
+        item.appendChild(inp); item.appendChild(lbl);
+        taskBox.appendChild(item);
+      });
+      box.appendChild(taskBox);
+      const close=document.createElement('button'); close.textContent='Close'; close.className='btn primary'; close.addEventListener('click',()=>{document.body.removeChild(box); render();});
+      box.appendChild(close);
+      Object.assign(box.style,{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:99,maxWidth:'90%',width:'400px'});
+      document.body.appendChild(box);
+    }
+
+    function updateMonthProgress(m,bar,stats){
+      const st=load();
+      const uid=`${m.year}-${m.month}`;
+      let doneCount=0,totalCount=0;
+      const monthData=st.months[uid];
+      if(monthData.days){
+        Object.values(monthData.days).forEach(d=>{
+          Object.keys(TASKS).forEach(t=>{ totalCount++; if(d.tasks[t]) doneCount++; });
+        });
+      }
+      const pct=Math.round((doneCount/Math.max(1,totalCount))*100);
+      bar.style.width=pct+'%'; stats.textContent=`Accuracy: ${pct}% (${doneCount}/${totalCount})`;
+      if(pct<80) toast(`Motivation: Accuracy ${pct}%. Keep going, consistency wins!`);
+    }
+
+    function updateChart(){
+      const st=load();
+      const entries=Object.values(st.months);
+      const labels=[],data=[];
+      entries.forEach(m=>{
+        const uid=`${m.year}-${m.month}`;
+        let done=0,total=0;
+        if(m.days){
+          Object.values(m.days).forEach(d=>{ Object.keys(TASKS).forEach(t=>{ total++; if(d.tasks[t]) done++; }); });
+        }
+        labels.push(`${monthsNames[m.month]} ${m.year}`);
+        data.push(Math.round((done/Math.max(1,total))*100));
+      });
+      const ctx=$('#progressChart').getContext('2d');
+      if(window.disChart) window.disChart.destroy();
+      window.disChart=new Chart(ctx,{
+        type:'line',
+        data:{labels,datasets:[{label:'Monthly Accuracy %',data,borderColor:'#6d8cff',backgroundColor:'rgba(109,140,255,0.2)',fill:true,tension:0.3}]},
+        options:{scales:{y:{min:0,max:100,ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.1)'}},x:{ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.05)'}}},plugins:{legend:{labels:{color:'#e9ecff'}}}}
+      });
+    }
+
+    function addMonth(){
+      const y=prompt('Enter year:', new Date().getFullYear());
+      const m=prompt('Enter month (0-11):', new Date().getMonth());
+      if(y===null||m===null) return;
+      const st=load(); const uid=`${y}-${m}`;
+      if(st.months[uid]) return toast('Month exists');
+      st.months[uid]={year:+y,month:+m,totalDays:daysInMonth(+y,+m)};
+      save(st); render();
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      if(!localStorage.getItem(STORAGE_KEY)){
+        const d=new Date();
+        const st={months:{}};
+        st.months[`${d.getFullYear()}-${d.getMonth()}`]={year:d.getFullYear(),month:d.getMonth(),totalDays:daysInMonth(d.getFullYear(),d.getMonth())};
+        save(st);
+      }
+      render();
+      $('#addMonthBtn').addEventListener('click',addMonth);
+    });
+  </script>
+</body>
+</html>
