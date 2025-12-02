@@ -18,42 +18,97 @@
       --bad: #ef4444;
       --shadow: 0 10px 30px rgba(0,0,0,0.35);
       --radius: 18px;
+      --glass: rgba(255,255,255,0.04);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; font-family: Inter, sans-serif; color: var(--fg); background: var(--bg); overflow-x: hidden; }
-    .topbar { position: sticky; top: 0; z-index: 9; background: rgba(13,16,41,0.85); border-bottom: 1px solid var(--card-border); }
-    .container { max-width: 1100px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .btn { border: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); color: var(--fg); padding: 10px 14px; border-radius: 12px; cursor: pointer; white-space: nowrap; }
-    .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; }
-    .sections { padding: 26px 20px 70px; max-width: 1100px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
-    .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 18px; }
-    .month { position: relative; }
-    .month-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .progress { margin-top: 10px; height: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--card-border); border-radius: 999px; overflow: hidden; }
-    .progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(135deg, var(--good), var(--accent-2)); transition: width .3s ease; }
-    .stats { margin-top: 10px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
-    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 14px; }
-    .day { aspect-ratio: 1/1; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); display: grid; place-items: center; font-weight: 700; cursor: pointer; }
-    .day.done { background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(109,140,255,0.16)); border-color: rgba(34,197,94,0.45); }
-    .task-box { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); margin-top: 6px; }
-    .task-item { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-    .task-item input { accent-color: var(--accent-2); }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: var(--fg);
+      background: var(--bg);
+      overflow-x: hidden;
+      min-height:100vh;
+      /* Background image - replace background.jpg with your image file */
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      position: relative;
+    }
+    /* overlay so text reads well on top of image */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background: linear-gradient(180deg, rgba(5,8,20,0.6), rgba(8,10,30,0.6));
+      pointer-events:none;
+      z-index:0;
+    }
+    .topbar { position: sticky; top: 0; z-index: 20; background: rgba(13,16,41,0.6); border-bottom: 1px solid var(--card-border); backdrop-filter: blur(6px); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position:relative; z-index:1; }
+    h1,h2,h3 { margin:0; }
+    .btn { border: 1px solid var(--card-border); background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); color: var(--fg); padding: 10px 14px; border-radius: 12px; cursor: pointer; white-space: nowrap; }
+    .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; font-weight:600; }
+    .sections { padding: 26px 16px 70px; max-width: 1100px; margin: 0 auto; position:relative; z-index:1; }
+    .card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+    .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 18px; }
+    .month { position: relative; overflow: visible; }
+    .month-header { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: nowrap; }
+    .month-title { display:flex; gap:12px; align-items:center; font-weight:700; }
+    .progress { margin-top: 10px; height: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--card-border); border-radius: 999px; overflow: hidden; }
+    .progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(135deg, var(--good), var(--accent-2)); transition: width .5s cubic-bezier(.2,.9,.2,1); }
+    .stats { margin-top: 8px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); flex-wrap: wrap; gap:8px; }
+    .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 12px; }
+    .day { aspect-ratio: 1/1; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.03); display: grid; place-items: center; font-weight: 700; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+    .day:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0,0,0,0.45); }
+    .day.done { background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(109,140,255,0.08)); border-color: rgba(34,197,94,0.35); color: #eafff1; }
+    .task-box { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--muted); margin-top: 8px; }
+    .task-item { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
     .task-item a { color: var(--accent-2); text-decoration: none; font-weight: 500; }
     .task-item a:hover { text-decoration: underline; }
-    canvas { margin-top: 20px; background: rgba(255,255,255,0.04); border-radius: 12px; width: 100%; height: auto; }
-    .toast { position: fixed; bottom: 16px; right: 16px; background: #121635; border: 1px solid var(--card-border); color: var(--fg); padding: 14px 16px; border-radius: 12px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .25s ease; }
+    canvas { margin-top: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; width: 100%; height: auto; }
+    .toast { position: fixed; bottom: 16px; right: 16px; background: #121635; border: 1px solid var(--card-border); color: var(--fg); padding: 12px 14px; border-radius: 12px; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: .25s ease; z-index:50; }
     .toast.show { opacity: 1; pointer-events: auto; }
-    .start-learning { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
-    .start-learning a { flex: 1 1 180px; text-align: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; padding: 12px 10px; border-radius: 12px; font-weight: 600; text-decoration: none; box-shadow: var(--shadow); transition: transform 0.2s; }
+    .start-learning { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .start-learning a { flex: 1 1 160px; text-align: center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #0b102b; padding: 10px 8px; border-radius: 12px; font-weight: 600; text-decoration: none; box-shadow: var(--shadow); transition: transform 0.2s; }
     .start-learning a:hover { transform: translateY(-3px); }
+    .month .actions { display:flex; gap:8px; align-items:center; }
+    .delete-month { background: transparent; border: none; color: var(--bad); cursor: pointer; font-weight:700; font-size:18px; padding:6px 8px; border-radius:8px; }
+    .delete-month:hover { background: rgba(255,0,0,0.06); }
+    /* modal overlay */
+    .modal-overlay { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.5); z-index:99; padding:12px; }
+    .modal-card { width:100%; max-width:480px; border-radius:12px; padding:16px; }
+    /* dashboard */
+    .dashboard { display:grid; grid-template-columns: repeat(4,1fr); gap:12px; margin-top:12px; }
+    .dash-card { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); padding:12px; border-radius:12px; border:1px solid var(--card-border); }
+    .dash-big { grid-column: span 2; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    /* responsive */
+    @media (max-width:1000px){
+      .dashboard{ grid-template-columns: repeat(2,1fr); }
+      .dash-big { grid-column: span 2; }
+    }
+    @media (max-width:640px){
+      .container{padding:12px;}
+      .months { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px; }
+      .dashboard{ grid-template-columns: 1fr; }
+      .dash-big{ grid-column: span 1; }
+    }
+    /* small utility */
+    .muted { color:var(--muted); font-size:13px; }
+    .pill { padding:6px 8px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid var(--card-border); font-weight:600; }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="container">
-      <h2>Discipline Tracker</h2>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="background.jpg" alt="you" style="width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,0.08)">
+        <div>
+          <h2 style="font-size:18px;margin-bottom:2px;">Discipline Tracker</h2>
+          <div class="muted" style="font-size:12px;">Sannu — Track daily learning & habits</div>
+        </div>
+      </div>
       <div style="flex:1"></div>
       <button id="addMonthBtn" class="btn primary">+ Add Month</button>
     </div>
@@ -69,11 +124,21 @@
       <a href="https://web.classplusapp.com/store/home?tabCategoryId=2" target="_blank">English/Aptitude</a>
     </div>
 
-    <h2 style="margin-top:32px;">Your Discipline Dashboard</h2>
-    <canvas id="progressChart" width="1000" height="300"></canvas>
+    <section style="margin-top:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <h2>Your Discipline Dashboard</h2>
+        <div class="muted">Summary across all months</div>
+      </div>
 
-    <h2>Your Months</h2>
-    <div class="months" id="monthsGrid"></div>
+      <div class="dashboard" id="dashboardArea" style="margin-top:12px;">
+        <!-- dashboard cards injected here -->
+      </div>
+
+      <canvas id="progressChart" width="1000" height="300"></canvas>
+    </section>
+
+    <h2 style="margin-top:26px;">Your Months</h2>
+    <div class="months card" id="monthsGrid" style="margin-top:12px;padding:12px;"></div>
   </main>
 
   <div class="toast" id="toast"></div>
@@ -91,25 +156,67 @@
     };
 
     const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 
     function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
 
     function load(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY))||{months:{}}; }catch(e){ return {months:{}}; } }
     function save(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
 
-    function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+    // single toast control
+    let toastTimer=null;
+    function toast(msg, ms=2200){
+      const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+      if(toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{ t.classList.remove('show'); toastTimer=null; }, ms);
+    }
 
+    // render all
     function render(){
       const st = load();
+      renderMonths(st);
+      renderDashboard(st);
+      updateChart(st);
+    }
+
+    function renderMonths(state){
       const grid = $('#monthsGrid');
       grid.innerHTML='';
-      Object.values(st.months).forEach(m=>{
+      // sort months by time (newest first)
+      const entries=Object.values(state.months).sort((a,b)=> (b.year*100+b.month)-(a.year*100+a.month));
+      if(entries.length===0){
+        grid.innerHTML = '<div class="muted" style="padding:20px;">No months yet — add one to start tracking.</div>';
+        return;
+      }
+      entries.forEach(m=>{
+        const uid=`${m.year}-${m.month}`;
         const card = document.createElement('div'); card.className='card month';
+        // header with delete
         const h=document.createElement('div'); h.className='month-header';
-        h.innerHTML=`<strong>${monthsNames[m.month]} ${m.year}</strong>`;
+        const title=document.createElement('div'); title.className='month-title';
+        title.innerHTML=`<strong>${monthsNames[m.month]} ${m.year}</strong><div class="muted" style="font-size:12px">• ${m.totalDays} days</div>`;
+        const actions=document.createElement('div'); actions.className='actions';
+        const del=document.createElement('button'); del.className='delete-month'; del.title='Delete month'; del.innerHTML='✖';
+        del.addEventListener('click',(ev)=>{
+          ev.stopPropagation();
+          if(confirm(`Delete ${monthsNames[m.month]} ${m.year}? This will remove all data for this month.`)){
+            const s=load();
+            delete s.months[uid];
+            save(s);
+            toast('Month deleted');
+            render();
+          }
+        });
+        actions.appendChild(del);
+        h.appendChild(title);
+        h.appendChild(actions);
         card.appendChild(h);
+
+        // progress bar + stats
         const prog=document.createElement('div'); prog.className='progress'; const bar=document.createElement('i'); prog.appendChild(bar); card.appendChild(prog);
         const stats=document.createElement('div'); stats.className='stats'; card.appendChild(stats);
+
+        // days grid
         const days=document.createElement('div'); days.className='days';
         for(let d=1;d<=m.totalDays;d++){
           const day=document.createElement('div'); day.className='day'; day.textContent=d;
@@ -119,8 +226,25 @@
         card.appendChild(days);
         grid.appendChild(card);
         updateMonthProgress(m,bar,stats);
+        // mark done days visually
+        markDoneDays(m, card);
       });
-      updateChart();
+    }
+
+    function markDoneDays(m, card){
+      const uid=`${m.year}-${m.month}`;
+      const st = load();
+      const monthData = st.months[uid] || {};
+      const daysNodes = card.querySelectorAll('.day');
+      daysNodes.forEach(node=>{
+        const d = +node.textContent;
+        node.classList.remove('done');
+        if(monthData.days && monthData.days[d]){
+          const dayTasks = monthData.days[d].tasks || {};
+          const anyDone = Object.keys(TASKS).some(t => !!dayTasks[t]);
+          if(anyDone) node.classList.add('done');
+        }
+      });
     }
 
     function openTasksModal(m,d){
@@ -130,53 +254,105 @@
       if(!state.months[uid].days[d]) state.months[uid].days[d]={tasks:{}};
       const dayData=state.months[uid].days[d];
 
-      const box=document.createElement('div');
-      box.className='card';
-      box.innerHTML=`<h3>${monthsNames[m.month]} ${d}, ${m.year}</h3>`;
+      const overlay=document.createElement('div'); overlay.className='modal-overlay';
+      const box=document.createElement('div'); box.className='card modal-card';
+      box.innerHTML=`<h3>${monthsNames[m.month]} ${d}, ${m.year}</h3><div style="margin-top:8px;color:var(--muted);font-size:13px">Mark tasks you completed today</div>`;
       const taskBox=document.createElement('div'); taskBox.className='task-box';
       Object.entries(TASKS).forEach(([t,link])=>{
         const item=document.createElement('div'); item.className='task-item';
+        const left=document.createElement('div'); left.style.display='flex'; left.style.alignItems='center'; left.style.gap='10px';
         const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=!!dayData.tasks[t];
         inp.addEventListener('change',()=>{
           dayData.tasks[t]=inp.checked;
+          // remove property if false to keep storage tidy
+          if(!inp.checked) delete dayData.tasks[t];
           save(state);
-          render();
+          markDoneDays(m, overlay); // update UI if same month open
         });
         const lbl=document.createElement('a'); lbl.textContent=t; lbl.href=link; lbl.target='_blank';
-        item.appendChild(inp); item.appendChild(lbl);
+        left.appendChild(inp); left.appendChild(lbl);
+        const right=document.createElement('div'); right.className='muted'; right.textContent='Open';
+        item.appendChild(left);
+        item.appendChild(right);
         taskBox.appendChild(item);
       });
       box.appendChild(taskBox);
-      const close=document.createElement('button'); close.textContent='Close'; close.className='btn primary'; close.addEventListener('click',()=>{document.body.removeChild(box); render();});
-      box.appendChild(close);
-      Object.assign(box.style,{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',zIndex:99,maxWidth:'90%',width:'400px'});
-      document.body.appendChild(box);
+      const btns=document.createElement('div'); btns.style.display='flex'; btns.style.gap='10px'; btns.style.marginTop='12px'; btns.style.justifyContent='flex-end';
+      const close=document.createElement('button'); close.textContent='Close'; close.className='btn primary';
+      close.addEventListener('click',()=>{ document.body.removeChild(overlay); render(); });
+      btns.appendChild(close);
+      box.appendChild(btns);
+      overlay.appendChild(box);
+      // close when clicking outside modal card
+      overlay.addEventListener('click',(e)=>{ if(e.target===overlay){ document.body.removeChild(overlay); render(); } });
+      document.body.appendChild(overlay);
     }
 
     function updateMonthProgress(m,bar,stats){
       const st=load();
       const uid=`${m.year}-${m.month}`;
       let doneCount=0,totalCount=0;
-      const monthData=st.months[uid];
+      const monthData=st.months[uid] || {};
       if(monthData.days){
         Object.values(monthData.days).forEach(d=>{
-          Object.keys(TASKS).forEach(t=>{ totalCount++; if(d.tasks[t]) doneCount++; });
+          Object.keys(TASKS).forEach(t=>{ totalCount++; if(d.tasks && d.tasks[t]) doneCount++; });
         });
       }
-      const pct=Math.round((doneCount/Math.max(1,totalCount))*100);
-      bar.style.width=pct+'%'; stats.textContent=`Accuracy: ${pct}% (${doneCount}/${totalCount})`;
-      if(pct<80) toast(`Motivation: Accuracy ${pct}%. Keep going, consistency wins!`);
+      const pct = Math.round((doneCount/Math.max(1,totalCount))*100);
+      bar.style.width=pct+'%';
+      stats.innerHTML = `<div>Accuracy: <strong>${pct}%</strong></div><div class="muted">${doneCount}/${Math.max(1,totalCount)} tasks</div>`;
     }
 
-    function updateChart(){
-      const st=load();
-      const entries=Object.values(st.months);
-      const labels=[],data=[];
+    function renderDashboard(state){
+      const area = $('#dashboardArea');
+      area.innerHTML = '';
+      // compute metrics across months
+      const months = Object.values(state.months);
+      let totalDone=0, totalPossible=0;
+      let best = null, worst = null;
+      months.forEach(m=>{
+        const uid=`${m.year}-${m.month}`;
+        const md = state.months[uid] || {};
+        let done=0,total=0;
+        if(md.days){
+          Object.values(md.days).forEach(d=>{ Object.keys(TASKS).forEach(t=>{ total++; if(d.tasks && d.tasks[t]) done++; }); });
+        }
+        const pct = total===0 ? 0 : Math.round( (done/total)*100 );
+        if(best===null || pct>best.pct) best={id:uid, pct, label:`${monthsNames[m.month]} ${m.year}`};
+        if(worst===null || pct<worst.pct) worst={id:uid, pct, label:`${monthsNames[m.month]} ${m.year}`};
+        totalDone += done; totalPossible += total;
+      });
+      const overallPct = Math.round((totalDone/Math.max(1,totalPossible))*100);
+
+      // cards
+      const c1 = document.createElement('div'); c1.className='dash-card';
+      c1.innerHTML = `<div style="font-size:13px" class="muted">Overall Accuracy</div><div style="font-size:22px;font-weight:800;margin-top:6px">${overallPct}%</div><div class="muted" style="margin-top:6px">${totalDone}/${Math.max(1,totalPossible)} tasks</div>`;
+      const c2 = document.createElement('div'); c2.className='dash-card';
+      c2.innerHTML = `<div style="font-size:13px" class="muted">Best Month</div><div style="font-size:16px;font-weight:700;margin-top:6px">${best?best.label:'—'}</div><div class="muted" style="margin-top:6px">${best?best.pct+'%':''}</div>`;
+      const c3 = document.createElement('div'); c3.className='dash-card';
+      c3.innerHTML = `<div style="font-size:13px" class="muted">Worst Month</div><div style="font-size:16px;font-weight:700;margin-top:6px">${worst?worst.label:'—'}</div><div class="muted" style="margin-top:6px">${worst?worst.pct+'%':''}</div>`;
+      const c4 = document.createElement('div'); c4.className='dash-card';
+      const pending = Math.max(0, totalPossible - totalDone);
+      c4.innerHTML = `<div style="font-size:13px" class="muted">Pending Tasks</div><div style="font-size:18px;font-weight:800;margin-top:6px">${pending}</div><div class="muted" style="margin-top:6px">${months.length} months</div>`;
+
+      area.appendChild(c1); area.appendChild(c2); area.appendChild(c3); area.appendChild(c4);
+
+      // gentle prompt if overall is low
+      if(months.length && overallPct < 50) {
+        // show a single toast encouraging user (not spamming)
+        toast(`Overall Accuracy ${overallPct}%. Small steps daily = big wins!`);
+      }
+    }
+
+    function updateChart(state){
+      const st = state || load();
+      const entries = Object.values(st.months).sort((a,b)=> (a.year*100+a.month)-(b.year*100+b.month));
+      const labels = [], data = [];
       entries.forEach(m=>{
         const uid=`${m.year}-${m.month}`;
-        let done=0,total=0;
+        let done=0, total=0;
         if(m.days){
-          Object.values(m.days).forEach(d=>{ Object.keys(TASKS).forEach(t=>{ total++; if(d.tasks[t]) done++; }); });
+          Object.values(m.days).forEach(d=>{ Object.keys(TASKS).forEach(t=>{ total++; if(d.tasks && d.tasks[t]) done++; }); });
         }
         labels.push(`${monthsNames[m.month]} ${m.year}`);
         data.push(Math.round((done/Math.max(1,total))*100));
@@ -185,9 +361,16 @@
       if(window.disChart) window.disChart.destroy();
       window.disChart=new Chart(ctx,{
         type:'line',
-        data:{labels,datasets:[{label:'Monthly Accuracy %',data,borderColor:'#6d8cff',backgroundColor:'rgba(109,140,255,0.2)',fill:true,tension:0.3}]},
-        options:{scales:{y:{min:0,max:100,ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.1)'}},x:{ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.05)'}}},plugins:{legend:{labels:{color:'#e9ecff'}}}}
+        data:{labels,datasets:[{label:'Monthly Accuracy %',data,borderColor:'#6d8cff',backgroundColor:'rgba(109,140,255,0.12)',fill:true,tension:0.3,pointRadius:4}]},
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          scales:{y:{min:0,max:100,ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.06)'}},x:{ticks:{color:'#b7bce7'},grid:{color:'rgba(255,255,255,0.02)'}}},
+          plugins:{legend:{labels:{color:'#e9ecff'}}}
+        }
       });
+      // ensure canvas height isn't tiny on mobile
+      $('#progressChart').style.height = (window.innerWidth < 600 ? '220px' : '300px');
     }
 
     function addMonth(){
@@ -198,9 +381,12 @@
       if(st.months[uid]) return toast('Month exists');
       st.months[uid]={year:+y,month:+m,totalDays:daysInMonth(+y,+m)};
       save(st); render();
+      toast('Month added');
     }
 
+    // init
     document.addEventListener('DOMContentLoaded',()=>{
+      // if no saved state, create current month like before
       if(!localStorage.getItem(STORAGE_KEY)){
         const d=new Date();
         const st={months:{}};
@@ -208,7 +394,20 @@
         save(st);
       }
       render();
-      $('#addMonthBtn').addEventListener('click',addMonth);
+      $('#addMonthBtn').addEventListener('click', addMonth);
+
+      // smooth scrolling for in-page anchors (already has CSS, but make links animated)
+      document.querySelectorAll('a[href^="#"]').forEach(a=>{
+        a.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const id = a.getAttribute('href').slice(1);
+          const el = document.getElementById(id);
+          if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+      });
+
+      // handle window resize to re-render chart responsively
+      window.addEventListener('resize', ()=>{ updateChart(); });
     });
   </script>
 </body>
